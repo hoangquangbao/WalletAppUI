@@ -20,7 +20,7 @@ struct Card: Identifiable {
 var cards : [Card] = [
     
     Card(name: "Quang Bao", cardType: "VISA", cardNumber: "1210 0121 2992 1229", bgCard: "bgCard1"),
-    Card(name: "Quang Huy", cardType: "MASTER CARD", cardNumber: "0302 2030 0660 0306", bgCard: "bgCard2"),
-    Card(name: "Ha Luu", cardType: "PAYPAL", cardNumber: "2302 2032 2662 2326", bgCard: "bgCard3")
+    Card(name: "Quang Huy", cardType: "PAYPAL", cardNumber: "0302 2030 0660 0306", bgCard: "bgCard2"),
+    Card(name: "Ha Luu", cardType: "MASTER CARD", cardNumber: "2302 2032 2662 2326", bgCard: "bgCard3")
     
 ]

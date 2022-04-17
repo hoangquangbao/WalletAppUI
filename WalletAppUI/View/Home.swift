@@ -11,14 +11,30 @@ struct Home: View {
     //MARK: Animation Properties
     @State var expandCards: Bool = false
     var body: some View {
-        VStack{
+        VStack(spacing: 0){
             
-            Text("Wallet")
-                .font(.largeTitle)
-                .fontWeight(.semibold)
-                .frame(maxWidth: .infinity, alignment: expandCards ? .leading : .center)
-                .padding(.horizontal, 15)
-                
+                Text("Wallet")
+                    .font(.largeTitle)
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity, alignment: expandCards ? .leading : .center)
+                    .overlay(alignment: .trailing) {
+                        //MARK: Close Button
+                        Button {
+                            //Close Cards
+                            withAnimation(.interactiveSpring(response: 1, dampingFraction: 0.6, blendDuration: 0.1)) {
+                                expandCards = false
+                            }
+                        } label: {
+                            Image(systemName: "plus")
+                                .foregroundColor(.white)
+                                .padding(10)
+                                .background(.blue, in: Circle())
+                        }
+                        .rotationEffect(.init(degrees: expandCards ? 45 : 0))
+                        .opacity(expandCards ? 1 : 0)
+                    }
+                    .padding(.bottom, 15)
+            
             ScrollView(.vertical, showsIndicators: false){
                 
                 VStack(spacing: 0) {
@@ -32,7 +48,7 @@ struct Home: View {
                 .overlay {
                     //To Avoid Scrolling
                     Rectangle()
-                        .fill(.black.opacity(expandCards ? 0 : 0.01))
+                        .fill(.white.opacity(expandCards ? 0 : 0.01))
                         .onTapGesture {
                             withAnimation(.easeInOut(duration: 0.35)){
                                 expandCards = true
@@ -41,7 +57,8 @@ struct Home: View {
                 }
             }
             .coordinateSpace(name: "SCROLL")
-            
+            // Cái này sẽ đẩy Card trong cùng lên 20 khi animation xảy ra
+            .offset(y: expandCards ? 0 : 20)
         }
         .padding([.horizontal,.top])
     }
@@ -90,6 +107,7 @@ struct Home: View {
             .cornerRadius(15)
             .shadow(color: .gray, radius: 2, y: 6)
 //            .offset(y: -rect.minY)
+            //Set các Card chồng lên nhau
             .offset(y: expandCards ? offset : -rect.minY + offset)
             
         }
