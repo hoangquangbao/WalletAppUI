@@ -215,6 +215,11 @@ struct DetailView: View {
             CardView()
                 .matchedGeometryEffect(id: currentCard.id, in: animation)
                 .frame(height: 200)
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        showDetailCard = false
+                    }
+                }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
@@ -255,10 +260,5 @@ struct DetailView: View {
         )
         .cornerRadius(15)
         .shadow(color: .gray, radius: 2, y: 6)
-        .onTapGesture {
-            withAnimation(.easeInOut(duration: 0.25)) {
-                showDetailCard = false
-            }
-        }
     }
 }
