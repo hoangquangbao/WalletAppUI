@@ -48,14 +48,17 @@ struct Home: View {
                     ForEach(cards){ card in
                         // If you want Pure transition without this little opacity change in the sense just remove this if...else condition
                         Group {
-                            if currentCard?.id == card.id && isShowDetailCard {
-                                CardView(card: card)
-                                    .opacity(0)
-                            } else {
-                                CardView(card: card)
-                                    .matchedGeometryEffect(id: card.id, in: animation)
-                                    .padding(.bottom, 5)
-                            }
+//                            if currentCard?.id == card.id && isShowDetailCard {
+//                                CardView(card: card)
+//                                    .opacity(0)
+//                            } else {
+//                                CardView(card: card)
+//                                    .matchedGeometryEffect(id: card.id, in: animation)
+//                                    .padding(.bottom, 5)
+//                            }
+                            CardView(card: card)
+                                .matchedGeometryEffect(id: card.id, in: animation)
+                                .padding(.bottom, 5)
                         }
                         // Show Detail Card
                             .onTapGesture {
@@ -247,7 +250,7 @@ struct DetailView: View {
                     VStack(spacing: 20){
                         
                         // Expense
-                        ForEach(expense) { expense in
+                        ForEach(expenses) { expense in
                             // ExpenseCardView
                             ExpenseCardView(expense: expense)
                         }
@@ -322,6 +325,9 @@ struct DetailView: View {
 struct ExpenseCardView: View {
     var expense: Expense
     
+    // Displaying Expenses one by one Base on Index
+    @State var isShowView: Bool = false
+    
     var body: some View {
         HStack(spacing: 14) {
             Image(expense.productIcon)
@@ -351,5 +357,20 @@ struct ExpenseCardView: View {
                     .foregroundColor(.gray)
             }
         }
+        .opacity(isShowView ? 1 : 0)
+        .onAppear {
+            // Time Taken for To Show up
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                withAnimation(.easeInOut(duration: 0.3).delay(Double(getIndex()) * 0.1)) {
+                    isShowView = true
+                }
+            }
+        }
+    }
+    
+    func getIndex() -> Int {
+        return expenses.firstIndex { currentExpense in
+            return expense.id == currentExpense.id
+        } ?? 0
     }
 }

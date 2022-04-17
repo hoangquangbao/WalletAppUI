@@ -16,7 +16,7 @@ struct Expense: Identifiable {
     var spendType: String
 }
 
-var expense : [Expense] = [
+var expenses : [Expense] = [
     Expense(amountSpent: "$98", product: "Facebook", productIcon: "facebook", spendType: "Add"),
     Expense(amountSpent: "$108", product: "Google", productIcon: "google", spendType: "Storage"),
     Expense(amountSpent: "$28", product: "Instagram", productIcon: "instagram", spendType: "Add"),
