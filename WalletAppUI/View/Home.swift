@@ -59,6 +59,21 @@ struct Home: View {
             .coordinateSpace(name: "SCROLL")
             // Cái này sẽ đẩy Card trong cùng lên 20 khi animation xảy ra
             .offset(y: expandCards ? 0 : 20)
+            
+            //MARK: Add Button
+            Button {
+
+            } label: {
+                Image(systemName: "plus")
+                    .foregroundColor(.white)
+                    .padding(20)
+                    .background(.blue, in: Circle())
+            }
+            .opacity(!expandCards ? 1 : 0)
+            .rotationEffect(.init(degrees: expandCards ? 180 : 0))
+            .scaleEffect(expandCards ? 0.01 : 1)
+//            .frame(height: expandCards ? 0 : nil)
+            .padding(.bottom, expandCards ? 0 : 30)
         }
         .padding([.horizontal,.top])
     }
