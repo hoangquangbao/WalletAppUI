@@ -246,8 +246,13 @@ struct DetailView: View {
                     
                     VStack(spacing: 20){
                         
+                        // Expense
+                        ForEach(expense) { expense in
+                            // ExpenseCardView
+                            ExpenseCardView(expense: expense)
+                        }
                     }
-                    //                    .padding()
+                    .padding()
                 }
                 .frame(maxWidth: .infinity)
                 .background(
@@ -257,8 +262,8 @@ struct DetailView: View {
                 )
                 .offset(y: isShowExpenseView ? 0 : height)
             }
-            //            .padding([.horizontal, .top])
-            .zIndex(-50)
+//            .padding([.horizontal, .top])
+//            .zIndex(-50)
         }
         .padding([.horizontal, .top])
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -310,5 +315,41 @@ struct DetailView: View {
         )
         .cornerRadius(15)
         .shadow(color: .gray, radius: 2, y: 6)
+    }
+}
+
+// MARK: - ExpenseCardView
+struct ExpenseCardView: View {
+    var expense: Expense
+    
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(expense.productIcon)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 50, height: 50)
+                .clipShape(Circle())
+            
+            VStack(alignment: .leading, spacing: 8) {
+                
+                Text(expense.product)
+                    .fontWeight(.bold)
+                
+                Text(expense.spendType)
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            
+            VStack(spacing: 8) {
+                
+                Text(expense.amountSpent)
+                    .fontWeight(.bold)
+                
+                Text(Date().formatted(date: .numeric, time: .omitted))
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+        }
     }
 }
