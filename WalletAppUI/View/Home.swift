@@ -13,6 +13,7 @@ struct Home: View {
     //MARK: Detail View Properties - 9:40
     @State var currentCard: Card?
     @State var showDetailCard: Bool = false
+    @Namespace var animation
     
     var body: some View {
         VStack(spacing: 0){
@@ -45,9 +46,17 @@ struct Home: View {
                     
                     //MARK: Card
                     ForEach(cards){ card in
-                        
-                        CardView(card: card)
-                            .padding(.bottom, 5)
+                        // If you want Pure transition without this little opacity change in the sense just remove this if...else condition
+                        Group {
+                            if currentCard?.id == card.id && showDetailCard {
+                                CardView(card: card)
+                                    .opacity(0)
+                            } else {
+                                CardView(card: card)
+                                    .matchedGeometryEffect(id: card.id, in: animation)
+                                    .padding(.bottom, 5)
+                            }
+                        }
                         // Show Detail Card
                             .onTapGesture {
                                 withAnimation(.easeInOut(duration: 0.25)) {
@@ -88,13 +97,13 @@ struct Home: View {
 //            .frame(height: expandCards ? 0 : nil)
             .padding(.bottom, expandCards ? 0 : 30)
         }
-        .padding([.horizontal,.top])
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .overlay {
             if let currentCard = currentCard,showDetailCard {
-                DetailView(currentCard: currentCard, showDetailCard: $showDetailCard)
+                DetailView(currentCard: currentCard, showDetailCard: $showDetailCard, animation: animation)
             }
         }
+        .padding([.horizontal,.top])
     }
 
     //MARK: - CardView
@@ -193,14 +202,18 @@ struct Home_Previews: PreviewProvider {
     }
 }
 
-//MARK: Detail View
+//MARK: - Detail View
 struct DetailView: View {
+    
     var currentCard: Card
     @Binding var showDetailCard: Bool
+    //Matched Geometry Effect
+    var animation: Namespace.ID
     var body: some View {
         
         VStack {
             CardView()
+                .matchedGeometryEffect(id: currentCard.id, in: animation)
                 .frame(height: 200)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -208,7 +221,7 @@ struct DetailView: View {
     
     @ViewBuilder
     func CardView() -> some View {
-        VStack{
+        VStack {
             HStack(alignment: .bottom){
                 Text("Credit")
                     .font(.body)
@@ -242,5 +255,10 @@ struct DetailView: View {
         )
         .cornerRadius(15)
         .shadow(color: .gray, radius: 2, y: 6)
+        .onTapGesture {
+            withAnimation(.easeInOut(duration: 0.25)) {
+                showDetailCard = false
+            }
+        }
     }
 }
