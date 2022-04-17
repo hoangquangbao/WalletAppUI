@@ -9,10 +9,10 @@ import SwiftUI
 
 struct Home: View {
     //MARK: Animation Properties
-    @State var expandCards: Bool = false
+    @State var isExpandCards: Bool = false
     //MARK: Detail View Properties - 9:40
     @State var currentCard: Card?
-    @State var showDetailCard: Bool = false
+    @State var isShowDetailCard: Bool = false
     @Namespace var animation
     
     var body: some View {
@@ -21,13 +21,13 @@ struct Home: View {
                 Text("Wallet")
                     .font(.largeTitle)
                     .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity, alignment: expandCards ? .leading : .center)
+                    .frame(maxWidth: .infinity, alignment: isExpandCards ? .leading : .center)
                     .overlay(alignment: .trailing) {
                         //MARK: Close Button
                         Button {
                             //Close Cards
                             withAnimation(.interactiveSpring(response: 1, dampingFraction: 0.6, blendDuration: 0.1)) {
-                                expandCards = false
+                                isExpandCards = false
                             }
                         } label: {
                             Image(systemName: "plus")
@@ -35,8 +35,8 @@ struct Home: View {
                                 .padding(10)
                                 .background(.blue, in: Circle())
                         }
-                        .rotationEffect(.init(degrees: expandCards ? 45 : 0))
-                        .opacity(expandCards ? 1 : 0)
+                        .rotationEffect(.init(degrees: isExpandCards ? 45 : 0))
+                        .opacity(isExpandCards ? 1 : 0)
                     }
                     .padding(.bottom, 15)
             
@@ -48,7 +48,7 @@ struct Home: View {
                     ForEach(cards){ card in
                         // If you want Pure transition without this little opacity change in the sense just remove this if...else condition
                         Group {
-                            if currentCard?.id == card.id && showDetailCard {
+                            if currentCard?.id == card.id && isShowDetailCard {
                                 CardView(card: card)
                                     .opacity(0)
                             } else {
@@ -61,7 +61,7 @@ struct Home: View {
                             .onTapGesture {
                                 withAnimation(.easeInOut(duration: 0.25)) {
                                     currentCard = card
-                                    showDetailCard = true
+                                    isShowDetailCard = true
                                 }
                             }
                     }
@@ -69,41 +69,44 @@ struct Home: View {
                 .overlay {
                     //To Avoid Scrolling
                     Rectangle()
-                        .fill(.white.opacity(expandCards ? 0 : 0.01))
+                        .fill(.white.opacity(isExpandCards ? 0 : 0.01))
                         .onTapGesture {
                             withAnimation(.easeInOut(duration: 0.35)){
-                                expandCards = true
+                                isExpandCards = true
                             }
                         }
                 }
             }
             .coordinateSpace(name: "SCROLL")
-            // Cái này sẽ đẩy Card trong cùng lên 20 khi animation xảy ra
-            .offset(y: expandCards ? 0 : 20)
-            
-            //MARK: Add Button
-            Button {
+            // Cái này sẽ đẩy Card trong cùng xún 20 trước khi animation xảy ra
+            .offset(y: isExpandCards ? 0 : 20)
+            .overlay(
+                //MARK: Add Button
+                // Đặt trong Overlay để nó ko chèn lên đổ bóng của Card dưới cùng
+                Button {
 
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 30))
-                    .foregroundColor(.white)
-                    .padding(15)
-                    .background(.blue, in: Circle())
-            }
-            .opacity(!expandCards ? 1 : 0)
-            .rotationEffect(.init(degrees: expandCards ? 180 : 0))
-            .scaleEffect(expandCards ? 0.01 : 1)
-//            .frame(height: expandCards ? 0 : nil)
-            .padding(.bottom, expandCards ? 0 : 30)
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 30))
+                        .foregroundColor(.white)
+                        .padding(15)
+                        .background(.blue, in: Circle())
+                }
+                .opacity(!isExpandCards ? 1 : 0)
+                .rotationEffect(.init(degrees: isExpandCards ? 180 : 0))
+                .scaleEffect(isExpandCards ? 0.01 : 1)
+    //            .frame(height: expandCards ? 0 : nil)
+                .padding(.bottom, isExpandCards ? 0 : 30)
+                , alignment: .bottom
+            )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding([.horizontal,.top])
         .overlay {
-            if let currentCard = currentCard,showDetailCard {
-                DetailView(currentCard: currentCard, showDetailCard: $showDetailCard, animation: animation)
+            if let currentCard = currentCard,isShowDetailCard {
+                DetailView(currentCard: currentCard, isShowDetailCard: $isShowDetailCard, animation: animation)
             }
         }
-        .padding([.horizontal,.top])
     }
 
     //MARK: - CardView
@@ -113,7 +116,7 @@ struct Home: View {
             
             let rect = proxy.frame(in: .named("SCROLL"))
             //Let's display some Portion of each Card
-            let offset = CGFloat(getIndex(Card: card) * (expandCards ? 10 : 70))
+            let offset = CGFloat(getIndex(Card: card) * (isExpandCards ? 10 : 70))
             
             VStack{
                 HStack(alignment: .bottom){
@@ -151,7 +154,7 @@ struct Home: View {
             .shadow(color: .gray, radius: 2, y: 6)
 //            .offset(y: -rect.minY)
             //Set các Card chồng lên nhau
-            .offset(y: expandCards ? offset : -rect.minY + offset)
+            .offset(y: isExpandCards ? offset : -rect.minY + offset)
             
         }
         // MARK: Max size
@@ -206,22 +209,69 @@ struct Home_Previews: PreviewProvider {
 struct DetailView: View {
     
     var currentCard: Card
-    @Binding var showDetailCard: Bool
-    //Matched Geometry Effect
+    @Binding var isShowDetailCard: Bool
+    // Matched Geometry Effect
     var animation: Namespace.ID
+    
+    // Delaying Expenses View
+    @State var isShowExpenseView: Bool = false
+    
     var body: some View {
         
         VStack {
             CardView()
                 .matchedGeometryEffect(id: currentCard.id, in: animation)
                 .frame(height: 200)
+                .padding(.bottom)
                 .onTapGesture {
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        showDetailCard = false
+                    
+                    // Closing Expenses View First
+                    // Closing "ExpenseView" first
+                    // Closing "DetailCard" after 0.2s
+                    withAnimation(.easeInOut) {
+                        isShowExpenseView = false
+                    }
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            isShowDetailCard = false
+                        }
                     }
                 }
+            
+            GeometryReader { proxy in
+                let height = proxy.size.height + 50
+                
+                ScrollView(.vertical, showsIndicators: false) {
+                    
+                    VStack(spacing: 20){
+                        
+                    }
+                    //                    .padding()
+                }
+                .frame(maxWidth: .infinity)
+                .background(
+                    Color.white
+                        .clipShape(RoundedRectangle(cornerRadius: 25, style: .continuous))
+                        .ignoresSafeArea()
+                )
+                .offset(y: isShowExpenseView ? 0 : height)
+            }
+            //            .padding([.horizontal, .top])
+            .zIndex(-50)
         }
+        .padding([.horizontal, .top])
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(
+            Color("bg")
+                .ignoresSafeArea()
+        )
+        //Khi View này xuất hiện thì set isShowExpenseView = true để show cái ScrollView trên. Ngc lại ta offset để đẩy nó xún dưới 1 đoạn = height
+        .onAppear {
+            withAnimation(.easeInOut.delay(0.1)) {
+                isShowExpenseView = true
+            }
+        }
     }
     
     @ViewBuilder
