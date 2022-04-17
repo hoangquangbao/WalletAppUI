@@ -39,6 +39,8 @@ struct Home: View {
         GeometryReader { proxy in
             
             let rect = proxy.frame(in: .named("SCROLL"))
+            //Let's display some Portion of each Card
+            let offset = -rect.minY + CGFloat(getIndex(Card: card) * 70)
             
             VStack{
                 HStack(alignment: .bottom){
@@ -69,14 +71,23 @@ struct Home: View {
             }
             .padding()
             .background(
-                .linearGradient(colors: [.black, Color(card.bgCard), Color(card.bgCard)], startPoint: .leading, endPoint: .trailing)
+                .linearGradient(colors: [.black, Color(card.bgCard), .black], startPoint: .top, endPoint: .bottomTrailing)
             )
             .cornerRadius(15)
-            .offset(y: -rect.minY)
+//            .offset(y: -rect.minY)
+            .offset(y: offset)
             
         }
         // MARK: Max size
         .frame(height: 200)
+    }
+    
+    ////////////////////// 5:16
+    //MARK: - Retreiving Index
+    func getIndex(Card: Card) -> Int{
+        return cards.firstIndex { currentCard in
+            return currentCard.id == Card.id
+        } ?? 0
     }
     
     // MARK: - Hidding all Number except last four
