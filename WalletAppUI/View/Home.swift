@@ -8,13 +8,16 @@
 import SwiftUI
 
 struct Home: View {
+    //MARK: Animation Properties
+    @State var expandCards: Bool = false
     var body: some View {
         VStack{
             
             Text("Wallet")
                 .font(.largeTitle)
                 .fontWeight(.semibold)
-                .frame(maxWidth: .infinity, alignment: .center)
+                .frame(maxWidth: .infinity, alignment: expandCards ? .leading : .center)
+                .padding(.horizontal, 15)
                 
             ScrollView(.vertical, showsIndicators: false){
                 
@@ -25,6 +28,16 @@ struct Home: View {
                         CardView(card: card)
                             .padding(.bottom, 5)
                     }
+                }
+                .overlay {
+                    //To Avoid Scrolling
+                    Rectangle()
+                        .fill(.black.opacity(expandCards ? 0 : 0.01))
+                        .onTapGesture {
+                            withAnimation(.easeInOut(duration: 0.35)){
+                                expandCards = true
+                            }
+                        }
                 }
             }
             .coordinateSpace(name: "SCROLL")
@@ -40,7 +53,7 @@ struct Home: View {
             
             let rect = proxy.frame(in: .named("SCROLL"))
             //Let's display some Portion of each Card
-            let offset = -rect.minY + CGFloat(getIndex(Card: card) * 70)
+            let offset = CGFloat(getIndex(Card: card) * (expandCards ? 10 : 70))
             
             VStack{
                 HStack(alignment: .bottom){
@@ -60,6 +73,7 @@ struct Home: View {
                 VStack(alignment: .leading, spacing: 10){
                     
                     Text(card.name)
+                        .fontWeight(.bold)
                     
                     Text(customCardNumber(number: card.cardNumber))
                         .font(.callout)
@@ -71,11 +85,12 @@ struct Home: View {
             }
             .padding()
             .background(
-                .linearGradient(colors: [.black, Color(card.bgCard), .black], startPoint: .top, endPoint: .bottomTrailing)
+                .linearGradient(colors: [Color(card.bgCard), .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
             )
             .cornerRadius(15)
+            .shadow(color: .gray, radius: 2, y: 6)
 //            .offset(y: -rect.minY)
-            .offset(y: offset)
+            .offset(y: expandCards ? offset : -rect.minY + offset)
             
         }
         // MARK: Max size
