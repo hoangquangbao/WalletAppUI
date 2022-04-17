@@ -10,6 +10,10 @@ import SwiftUI
 struct Home: View {
     //MARK: Animation Properties
     @State var expandCards: Bool = false
+    //MARK: Detail View Properties - 9:40
+    @State var currentCard: Card?
+    @State var showDetailCard: Bool = false
+    
     var body: some View {
         VStack(spacing: 0){
             
@@ -39,10 +43,18 @@ struct Home: View {
                 
                 VStack(spacing: 0) {
                     
+                    //MARK: Card
                     ForEach(cards){ card in
                         
                         CardView(card: card)
                             .padding(.bottom, 5)
+                        // Show Detail Card
+                            .onTapGesture {
+                                withAnimation(.easeInOut(duration: 0.25)) {
+                                    currentCard = card
+                                    showDetailCard = true
+                                }
+                            }
                     }
                 }
                 .overlay {
@@ -65,8 +77,9 @@ struct Home: View {
 
             } label: {
                 Image(systemName: "plus")
+                    .font(.system(size: 30))
                     .foregroundColor(.white)
-                    .padding(20)
+                    .padding(15)
                     .background(.blue, in: Circle())
             }
             .opacity(!expandCards ? 1 : 0)
@@ -76,6 +89,12 @@ struct Home: View {
             .padding(.bottom, expandCards ? 0 : 30)
         }
         .padding([.horizontal,.top])
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay {
+            if let currentCard = currentCard,showDetailCard {
+                DetailView(currentCard: currentCard, showDetailCard: $showDetailCard)
+            }
+        }
     }
 
     //MARK: - CardView
@@ -137,38 +156,91 @@ struct Home: View {
             return currentCard.id == Card.id
         } ?? 0
     }
+}
+
+// MARK: - Hidding all Number except last four
+// Global Method
+func customCardNumber(number: String) -> String {
     
-    // MARK: - Hidding all Number except last four
-    func customCardNumber(number: String) -> String {
+    var newValue: String = ""
+    let maxCount: Int = number.count - 4
+    
+    number.enumerated().forEach({ value in
         
-        var newValue: String = ""
-        let maxCount: Int = number.count - 4
-        
-        number.enumerated().forEach({ value in
+        if value.offset >= maxCount{
             
-            if value.offset >= maxCount{
-                
-                // Display Number
-                let string = String(value.element)
-                newValue.append(contentsOf: string)
+            // Display Number
+            let string = String(value.element)
+            newValue.append(contentsOf: string)
+        } else {
+            // Simply display Start
+            // Avoiding space
+            let string = String(value.element)
+            if string == " "{
+                newValue.append(contentsOf: " ")
             } else {
-                // Simply display Start
-                // Avoiding space
-                let string = String(value.element)
-                if string == " "{
-                    newValue.append(contentsOf: " ")
-                } else {
-                    newValue.append(contentsOf: "*")
-                }
+                newValue.append(contentsOf: "*")
             }
-        })
-        
-        return newValue
-    }
+        }
+    })
+    
+    return newValue
 }
 
 struct Home_Previews: PreviewProvider {
     static var previews: some View {
         Home()
+    }
+}
+
+//MARK: Detail View
+struct DetailView: View {
+    var currentCard: Card
+    @Binding var showDetailCard: Bool
+    var body: some View {
+        
+        VStack {
+            CardView()
+                .frame(height: 200)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+    
+    @ViewBuilder
+    func CardView() -> some View {
+        VStack{
+            HStack(alignment: .bottom){
+                Text("Credit")
+                    .font(.body)
+                    .foregroundColor(.white)
+                
+                Spacer()
+                
+                Text(currentCard.cardType)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+            }
+            
+            Spacer()
+            
+            VStack(alignment: .leading, spacing: 10){
+                
+                Text(currentCard.name)
+                    .fontWeight(.bold)
+                
+                Text(customCardNumber(number: currentCard.cardNumber))
+                    .font(.callout)
+                    .fontWeight(.bold)
+                
+            }
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding()
+        .background(
+            .linearGradient(colors: [Color(currentCard.bgCard), .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
+        )
+        .cornerRadius(15)
+        .shadow(color: .gray, radius: 2, y: 6)
     }
 }
